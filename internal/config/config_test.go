@@ -117,7 +117,7 @@ security:
 	}
 }
 
-func TestLoadSourceUnknownBrowserFailsWithSupportedNames(t *testing.T) {
+func TestLoadSourceDiaDerivesPath(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, "source.yaml", `
 sink:
@@ -127,11 +127,36 @@ browser:
 security:
   shared_secret: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 `)
+	cfg, err := LoadSource(dir)
+	if err != nil {
+		t.Fatalf("LoadSource: %v", err)
+	}
+	home, _ := os.UserHomeDir()
+	base := filepath.Join(home, "Library", "Application Support")
+	if runtime.GOOS == "linux" {
+		base = filepath.Join(home, ".config")
+	}
+	want := filepath.Join(base, "Dia", "User Data", "Default", "Cookies")
+	if cfg.Chrome.DBPath != want {
+		t.Errorf("Dia DBPath: got %q, want %q", cfg.Chrome.DBPath, want)
+	}
+}
+
+func TestLoadSourceUnknownBrowserFailsWithSupportedNames(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "source.yaml", `
+sink:
+  url: http://example.test:9999/sync
+browser:
+  name: safari
+security:
+  shared_secret: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+`)
 	_, err := LoadSource(dir)
 	if err == nil {
 		t.Fatal("expected unsupported browser error")
 	}
-	if !strings.Contains(err.Error(), "supported:") || !strings.Contains(err.Error(), "chrome") {
+	if !strings.Contains(err.Error(), "supported:") || !strings.Contains(err.Error(), "dia") {
 		t.Errorf("error should list supported browsers, got %v", err)
 	}
 }

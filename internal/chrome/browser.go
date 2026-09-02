@@ -97,6 +97,12 @@ var browserRegistry = map[string]Browser{
 		KeychainAccount: "Arc",
 		KeychainService: "Arc Safe Storage",
 	},
+	"dia": {
+		Name:            "dia",
+		SupportDir:      []string{"Dia", "User Data"},
+		KeychainAccount: "Dia",
+		KeychainService: "Dia Safe Storage",
+	},
 }
 
 // LookupBrowser returns the browser descriptor for name. Empty name defaults
